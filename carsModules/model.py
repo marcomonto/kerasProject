@@ -25,29 +25,17 @@ def create_cars_regression_model(input_dim: int = 5) -> Sequential:
     print("Creazione modello di regressione per cars...")
     
     model = Sequential([
-        # Input layer esplicito
         Input(shape=(input_dim,)),
-        
-        # Dense layer con 64 nodi (input layer secondo specifiche)
-        Dense(64, activation='relu'),
-        
-        # Hidden dense layer con 32 nodi  
+        Dense(64, activation='relu'),  
         Dense(32, activation='relu'),
-        
-        # Output dense layer con 1 nodo per regressione
         Dense(1)
     ])
     
-    # Compila il modello secondo le specifiche
     model.compile(
         loss='mse',                    # Mean Squared Error
         optimizer='rmsprop',           # RMSprop optimizer
         metrics=['mse']                # Metriche da monitorare
     )
-    
-    # Stampa architettura del modello
-    print("\nArchitettura del modello:")
-    model.summary()
     
     return model
 
