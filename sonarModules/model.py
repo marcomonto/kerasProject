@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.layers import Dense, Input, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
 
 def create_sonar_classification_model(input_dim: int = 60) -> Sequential:
     """
@@ -26,60 +27,50 @@ def create_sonar_classification_model(input_dim: int = 60) -> Sequential:
     print("Architettura: Input(60) -> Dense(60, relu) -> Dense(1, sigmoid)")
     
     model = Sequential([
-        # Input layer esplicito
         Input(shape=(input_dim,)),
-        
-        # Input Dense layer con 60 nodi e ReLU
         Dense(60, activation='relu'),
-        
-        # Output Dense layer con 1 nodo e sigmoid per classificazione binaria
         Dense(1, activation='sigmoid')
     ])
     
-    # Compila secondo le specifiche
     model.compile(
         loss='binary_crossentropy',    # Per classificazione binaria
         optimizer='adam',              # Adam optimizer
         metrics=['accuracy']           # Accuracy come metrica
     )
     
-    # Stampa architettura del modello
-    print("\nArchitettura del modello:")
     model.summary()
-    
-    # Conteggio parametri
-    total_params = model.count_params()
-    print(f"\nParametri totali: {total_params:,}")
     
     return model
 
-def create_alternative_sonar_model(input_dim: int = 60, hidden_layers: int = 1) -> Sequential:
+def create_improved_sonar_model(input_dim: int = 60) -> Sequential:
     """
-    Modello alternativo con più layer nascosti per confronto
+    Crea un modello migliorato con Dropout per prevenire overfitting
+    
+    Miglioramenti:
+    - Aggiunge layer Dropout per regolarizzazione
+    - Architettura più profonda per migliore apprendimento
+    - Stesso loss e optimizer del modello originale
+    
+    Architettura:
+    - Input Dense layer: 64 nodi (relu) + Dropout(0.3)
+    - Hidden Dense layer: 32 nodi (relu) + Dropout(0.5) 
+    - Output Dense layer: 1 nodo (sigmoid)
     
     Args:
-        input_dim: Numero di features di input
-        hidden_layers: Numero di layer nascosti aggiuntivi
+        input_dim: Numero di features di input (default=60)
         
     Returns:
-        Modello Keras alternativo
+        Modello Keras compilato con Dropout
     """
-    print(f"Creazione modello alternativo con {hidden_layers} layer nascosti...")
-    
-    model = Sequential([Input(shape=(input_dim,))])
-    
-    # Layer di input
-    model.add(Dense(60, activation='relu'))
-    
-    # Layer nascosti aggiuntivi
-    nodes = 60
-    for i in range(hidden_layers):
-        nodes = max(10, nodes // 2)  # Dimezza i nodi ad ogni layer
-        model.add(Dense(nodes, activation='relu'))
-        print(f"Layer nascosto {i+1}: {nodes} nodi")
-    
-    # Output layer
-    model.add(Dense(1, activation='sigmoid'))
+    model = Sequential([
+        Input(shape=(input_dim,)),
+        Dense(64, activation='relu'),
+        Dropout(0.3),                    
+        Dense(32, activation='relu'),
+        Dropout(0.5),                    
+        
+        Dense(1, activation='sigmoid')  
+    ])
     
     model.compile(
         loss='binary_crossentropy',
@@ -87,30 +78,24 @@ def create_alternative_sonar_model(input_dim: int = 60, hidden_layers: int = 1) 
         metrics=['accuracy']
     )
     
+    model.summary()
+    
     return model
 
-def get_model_info() -> dict:
+def get_early_stopping_callback(patience: int = 15) -> EarlyStopping:
     """
-    Restituisce informazioni sul modello sonar
+    Crea callback Early Stopping per prevenire overfitting
     
+    Args:
+        patience: Numero di epochs senza miglioramento prima di fermarsi
+        
     Returns:
-        Dizionario con info del modello
+        EarlyStopping callback configurato
     """
-    return {
-        'architecture': 'Sequential',
-        'layers': [
-            {'type': 'Input', 'shape': '(60,)'},
-            {'type': 'Dense', 'nodes': 60, 'activation': 'relu'},
-            {'type': 'Dense', 'nodes': 1, 'activation': 'sigmoid'}
-        ],
-        'compilation': {
-            'loss': 'binary_crossentropy',
-            'optimizer': 'adam',
-            'metrics': ['accuracy']
-        },
-        'training_params': {
-            'epochs': 100,
-            'batch_size': 5
-        },
-        'task': 'Binary Classification (Metal vs Rock)'
-    }
+    return EarlyStopping(
+        monitor='val_accuracy',          # Monitora validation accuracy
+        mode='max',                      # Cerca il massimo
+        patience=patience,               # Aspetta N epochs
+        restore_best_weights=True,       # Ripristina i migliori pesi
+        verbose=1                        # Stampa quando si ferma
+    )

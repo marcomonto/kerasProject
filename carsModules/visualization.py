@@ -74,8 +74,13 @@ def create_mse_training_plot(history: tf.keras.callbacks.History) -> None:
     else:
         print("✅ Buona generalizzazione")
 
-def create_comprehensive_analysis(history: tf.keras.callbacks.History, results: Dict, 
-                                 model: tf.keras.Sequential, X_test: np.ndarray, y_test: np.ndarray) -> None:
+def create_comprehensive_analysis(
+        history: tf.keras.callbacks.History,
+        results: Dict, 
+        model: tf.keras.Sequential,
+        X_test: np.ndarray,
+        y_test: np.ndarray
+    ) -> None:
     """
     Crea un'analisi completa con multiple visualizzazioni
     
@@ -113,12 +118,7 @@ def create_comprehensive_analysis(history: tf.keras.callbacks.History, results: 
     axes[0, 0].legend()
     axes[0, 0].grid(True, alpha=0.3)
     
-    # Calcola R²
-    ss_res = np.sum((y_test - y_pred) ** 2)
-    ss_tot = np.sum((y_test - np.mean(y_test)) ** 2)
-    r2 = 1 - (ss_res / ss_tot)
-    
-    axes[0, 0].text(0.05, 0.95, f'R² = {r2:.3f}\nRMSE = ${results["test_rmse"]:.2f}', 
+    axes[0, 0].text(0.05, 0.95, f'RMSE = ${results["test_rmse"]:.2f}', 
                    transform=axes[0, 0].transAxes, verticalalignment='top',
                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     
@@ -146,19 +146,7 @@ def create_comprehensive_analysis(history: tf.keras.callbacks.History, results: 
                    transform=axes[1, 0].transAxes, verticalalignment='top',
                    bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5))
     
-    # 4. Q-Q plot semplificato (distribuzione dei residui)
-    sorted_residuals = np.sort(residuals)
-    rng = np.random.RandomState(42)
-    normal_quantiles = rng.normal(0, std_residual, len(residuals))
-    normal_quantiles = np.sort(normal_quantiles)
-    
-    axes[1, 1].scatter(normal_quantiles, sorted_residuals, alpha=0.6, color='orange')
-    axes[1, 1].plot([normal_quantiles.min(), normal_quantiles.max()], 
-                   [sorted_residuals.min(), sorted_residuals.max()], 'r--', linewidth=2)
-    axes[1, 1].set_xlabel('Theoretical Normal Quantiles')
-    axes[1, 1].set_ylabel('Sample Quantiles')
-    axes[1, 1].set_title('Q-Q Plot (Normality Check)')
-    axes[1, 1].grid(True, alpha=0.3)
+    axes[1, 1].set_visible(False)
     
     plt.tight_layout()
     plt.savefig(f'{output_dir}/comprehensive_analysis.png', dpi=300, bbox_inches='tight')
@@ -199,36 +187,3 @@ def create_feature_importance_plot(feature_names: list, importance_scores: list)
     plt.savefig(f'{output_dir}/feature_importance.png', dpi=300, bbox_inches='tight')
     print(f"Importanza features salvata: '{output_dir}/feature_importance.png'")
 
-def print_final_summary(results: Dict) -> None:
-    """
-    Stampa un riassunto finale dei risultati
-    
-    Args:
-        results: Dizionario con i risultati del modello
-    """
-    print("\n" + "="*80)
-    print("RIASSUNTO FINALE MODELLO CARS REGRESSION")
-    print("="*80)
-    
-    print(f"📊 METRICHE PRINCIPALI:")
-    print(f"   • Test MSE: {results['test_mse']:.2f}")
-    print(f"   • Test RMSE: ${results['test_rmse']:.2f}")
-    print(f"   • Media prezzi reali: ${results['mean_target']:.2f}")
-    print(f"   • RMSE come % della media: {results['rmse_percentage']:.1f}%")
-    
-    print(f"\n🎯 INTERPRETAZIONE:")
-    if results['rmse_percentage'] < 10:
-        print("   ✅ Eccellente: Errore molto basso")
-    elif results['rmse_percentage'] < 20:
-        print("   ✅ Buono: Errore accettabile")  
-    elif results['rmse_percentage'] < 30:
-        print("   ⚠️  Discreto: Errore moderato")
-    else:
-        print("   ❌ Scarso: Errore elevato")
-    
-    print(f"\n📈 GRAFICI GENERATI:")
-    print(f"   1. mse_training_validation.png - MSE durante training")
-    print(f"   2. comprehensive_analysis.png - Analisi predizioni completa")
-    print(f"   3. feature_importance.png - Importanza delle features")
-    
-    print("="*80)

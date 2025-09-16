@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, classification_report
 from sklearn.preprocessing import LabelEncoder
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 def train_sonar_model(model: tf.keras.Sequential, 
                       X_train: np.ndarray, y_train: np.ndarray,
@@ -94,31 +94,10 @@ def make_predictions_and_evaluate(model: tf.keras.Sequential,
     
     # Specificity (True Negative Rate)
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-    
-    print(f"METRICHE DI CLASSIFICAZIONE:")
-    print(f"Precision: {precision:.4f}")
-    print(f"Recall (Sensitivity): {recall:.4f}")
-    print(f"Specificity: {specificity:.4f}")
-    print(f"F1-Score: {f1:.4f}")
-    
-    print(f"\nCONFUSION MATRIX:")
-    print(f"                 Predicted")
-    print(f"              R(0)    M(1)")
-    print(f"Actual R(0)    {tn:3d}     {fp:3d}")
-    print(f"       M(1)    {fn:3d}     {tp:3d}")
+
     
     # Interpretazione delle classi
     class_names = encoder.classes_
-    print(f"\nINTERPRETAZIONE:")
-    print(f"Classe 0 (R): {class_names[0]} - Roccia")
-    print(f"Classe 1 (M): {class_names[1]} - Metallo")
-    print(f"True Negatives (R->R): {tn}")
-    print(f"False Positives (R->M): {fp}")
-    print(f"False Negatives (M->R): {fn}")
-    print(f"True Positives (M->M): {tp}")
-    
-    # Classification report dettagliato
-    print(f"\nCLASSIFICATION REPORT:")
     target_names = [f"{cls} ({class_names[i]})" for i, cls in enumerate(['Rock', 'Metal'])]
     report = classification_report(y_test, y_pred_binary, target_names=target_names)
     print(report)
@@ -209,3 +188,56 @@ def show_sample_predictions(X_test: np.ndarray, y_test: np.ndarray,
         pred_name = class_names[pred_class]
         
         print(f"{i:<8} {true_name:<8} {pred_name:<8} {pred_proba:<8.3f} {is_correct:<8}")
+
+def train_improved_sonar_model(model: tf.keras.Sequential, 
+                              X_train: np.ndarray, y_train: np.ndarray,
+                              X_test: np.ndarray, y_test: np.ndarray,
+                              callbacks: List = None,
+                              epochs: int = 100, 
+                              batch_size: int = 5) -> Tuple[tf.keras.callbacks.History, Dict]:
+    """
+    Addestra il modello sonar MIGLIORATO con Early Stopping e Dropout
+    
+    Args:
+        model: Modello Keras da addestrare (con Dropout)
+        X_train: Features di training
+        y_train: Labels di training (0/1)
+        X_test: Features di test
+        y_test: Labels di test (0/1)
+        callbacks: Lista di callback (es. EarlyStopping)
+        epochs: Numero massimo di epoche (default=100)
+        batch_size: Dimensione batch (default=5)
+        
+    Returns:
+        Tuple con history del training e metriche finali
+    """
+    
+    # Training del modello con callbacks
+    history = model.fit(
+        X_train, y_train,
+        epochs=epochs,
+        batch_size=batch_size,
+        validation_data=(X_test, y_test),
+        callbacks=callbacks if callbacks else [],  # Early stopping
+        verbose=1,
+        shuffle=True
+    )
+    
+    test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=0)
+    
+    # Informazioni Early Stopping
+    if callbacks:
+        stopped_epoch = len(history.history['loss'])
+        print(f"⏱️  Training fermato all'epoca: {stopped_epoch}")
+        if stopped_epoch < epochs:
+            print(f"✅ Early Stopping attivato! Risparmiati {epochs - stopped_epoch} epochs")
+    
+    # Metriche complete
+    results = {
+        'test_loss': test_loss,
+        'test_accuracy': test_accuracy,
+        'epochs_trained': len(history.history['loss']),
+        'early_stopped': len(history.history['loss']) < epochs if callbacks else False
+    }
+    
+    return history, results

@@ -1,8 +1,11 @@
 from carsModules.data_handler import load_and_prepare_cars_data, get_feature_info, setup_reproducibility
 from carsModules.model import create_cars_regression_model
 from carsModules.training import train_model_with_validation, compare_predictions, analyze_feature_importance
-from carsModules.visualization import (create_mse_training_plot, create_comprehensive_analysis, 
-                                     create_feature_importance_plot, print_final_summary)
+from carsModules.visualization import (
+    create_mse_training_plot,
+    create_comprehensive_analysis,
+    create_feature_importance_plot
+    )
 
 def main():
     
@@ -44,17 +47,7 @@ def main():
     rng = np.random.RandomState(42)
     importance_scores = rng.random(len(feature_names))
     create_feature_importance_plot(feature_names, importance_scores)
-    
-    print_final_summary(results)
-    
-    print(f"✅ Modello Sequential creato (loss='mse', optimizer='rmsprop', metrics=['mse'])")
-    print(f"✅ Training: epochs=150, batch_size=50")
-    print(f"✅ Dense layer input (input_dim=5, activation='relu')")
-    print(f"✅ Dense hidden layer (activation='relu')")
-    print(f"✅ Dense output layer (1 nodo)")
-    print(f"✅ MSE plot training vs validation (validation_split=0.2)")
-    print(f"✅ RMSE calcolato su test set: ${results['test_rmse']:.2f}")
-    print(f"✅ Grafici salvati in results/cars_grafici/")
+
 
 if __name__ == "__main__":
     main()
