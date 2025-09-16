@@ -126,16 +126,8 @@ def create_classification_analysis(eval_results: Dict, encoder, output_suffix: s
         axes[0, 1].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
                        f'{value:.3f}', ha='center', va='bottom', fontweight='bold')
     
-    # 3. Distribuzione delle probabilità predette
-    y_pred_proba = eval_results['predictions_proba'].flatten()
-    
-    axes[1, 0].hist(y_pred_proba, bins=20, alpha=0.7, color='purple', edgecolor='black')
-    axes[1, 0].axvline(x=0.5, color='red', linestyle='--', linewidth=2, label='Decision Threshold')
-    axes[1, 0].set_xlabel('Predicted Probability')
-    axes[1, 0].set_ylabel('Frequency')
-    axes[1, 0].set_title('Distribution of Predicted Probabilities')
-    axes[1, 0].legend()
-    axes[1, 0].grid(True, alpha=0.3)
+    # Rimuovi il terzo subplot (Distribution of Predicted Probabilities)
+    axes[1, 0].set_visible(False)
     
     # Rimuovi il quarto subplot (ROC Curve)
     axes[1, 1].set_visible(False)
