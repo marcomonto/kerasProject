@@ -2,7 +2,7 @@ from breastCancerModules.data_handler import setup_reproducibility, load_and_pre
 from breastCancerModules.models import create_basic_model, create_funnel_model
 from breastCancerModules.training import (run_epochs_experiment, run_batch_size_experiment,
                                           run_architecture_experiment, run_comprehensive_architecture_comparison)
-from breastCancerModules.visualization import (create_visualizations, generate_report,
+from breastCancerModules.visualization import (create_visualizations,
                                                create_comprehensive_architecture_visualization)
 
 
@@ -42,11 +42,6 @@ def main():
     )
 
     create_visualizations(
-        epochs_results,
-        batch_size_results,
-        architecture_results
-    )
-    generate_report(
         epochs_results,
         batch_size_results,
         architecture_results

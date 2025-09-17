@@ -46,7 +46,6 @@ def load_and_prepare_sonar_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, n
     encoder = LabelEncoder()
     encoded_y = encoder.fit_transform(y)
     
-    print(f"Encoding: {dict(zip(encoder.classes_, encoder.transform(encoder.classes_)))}")
     
     # Split dei dati
     X_train, X_test, y_train, y_test = train_test_split(
@@ -94,7 +93,6 @@ def apply_feature_scaling(X_train: np.ndarray, X_test: np.ndarray) -> Tuple[np.n
     Returns:
         X_train_scaled, X_test_scaled, scaler
     """
-    print("Applicando standardizzazione features...")
     
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
